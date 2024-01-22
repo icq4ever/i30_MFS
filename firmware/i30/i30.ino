@@ -16,7 +16,7 @@ byte buffer[11];    // data buffer
 
 void setup() {
   // put your setup code here, uto run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   pinMode(PIN_LIGHT_ON, INPUT_PULLUP);
   pinMode(PIN_WASH_F_SW, INPUT_PULLUP);

@@ -1,4 +1,6 @@
-
+/*
+  arduino pin mapping 
+*/
 #define PIN_WASH_R_SW 2
 #define PIN_WASH_F_SW 3
 #define PIN_LIGHT_ON  5
@@ -9,6 +11,8 @@
 #define PIN_LIGHT A6
 #define PIN_TURN  A2
 #define PIN_PASSING A3
+
+byte buffer[12];    // data buffer
 
 void setup() {
   // put your setup code here, to run once:
@@ -22,38 +26,41 @@ void setup() {
 }
 
 void loop() {
-  // light switch
-  // Serial.println(checkLightSwitch(analogRead(PIN_LIGHT)));
-
-  // passing/high switch
-  checkPassingSwitch(analogRead(PIN_PASSING));
-
-  // turn signal
-  // Serial.println(checkTurnSignal(analogRead(PIN_TURN)));
-
-  // front wiper switch
-  // Serial.println(checkFrontWiper(analogRead(PIN_WIPER_F)));
-  
-  // front wiper speed
-  // Serial.println(checkFrontWiperSpeed(analogRead(PIN_WIPER_SPEED)));
-  
-  // rear wiper switch
-  // Serial.println(checkRearWiperSwitch(analogRead(PIN_WIPER_R)));
-  
-  // washer front sw
-  checkWasherFrontSW(digitalRead(PIN_WASH_F_SW));
-
-  // washer rear sw
-  checkWasherRearSW(digitalRead(PIN_WASH_R_SW));
-  
-  // light on / wiper on
-  checkLightLowBackupOn(digitalRead(PIN_LIGHT_ON));
-  checkWiperLowBackupOn(digitalRead(PIN_WIPER_ON));
-
   delay(100);
 }
 
+void readMFS(){
+  buffer[0] = '/';
 
+  // light switch
+  buffer[1] = checkLightSwitch(analogRead(PIN_LIGHT));
+
+  // passing/high switch
+  buffer[2]= checkPassingSwitch(analogRead(PIN_PASSING));
+
+  // turn signal
+  buffer[3] = checkTurnSignal(analogRead(PIN_TURN));
+
+  // front wiper switch
+  buffer[4] = checkFrontWiper(analogRead(PIN_WIPER_F));
+  
+  // front wiper speed
+  buffer[5] = checkFrontWiperSpeed(analogRead(PIN_WIPER_SPEED));
+  
+  // rear wiper switch
+  buffer[6] = checkRearWiperSwitch(analogRead(PIN_WIPER_R));
+  
+  // washer front sw
+  buffer[7] = checkWasherFrontSW(digitalRead(PIN_WASH_F_SW));
+
+  // washer rear sw
+  buffer[8] = checkWasherRearSW(digitalRead(PIN_WASH_R_SW));
+  
+  // light on / wiper on
+  buffer[9] = checkLightLowBackupOn(digitalRead(PIN_LIGHT_ON));
+  buffer[10] = checkWiperLowBackupOn(digitalRead(PIN_WIPER_ON));
+  buffer[11] = '\n';
+}
 
 uint8_t checkLightSwitch(uint16_t val){
   if(val < 300)         return 0;
@@ -120,10 +127,9 @@ uint8_t checkLightLowBackupOn(uint8_t val){
   return val;
 }
 
-
 /*
   11 byte
-  0 : START CHAR 
+  0 : START CHAR ('/');
   1 : LIGHT (0-3)
   2 : PASS/HIGH (0-2)
   3 : TURN SIGNAL (0-2)
@@ -135,3 +141,7 @@ uint8_t checkLightLowBackupOn(uint8_t val){
   9 : LOW LIGHT BACKUP SW (0, 1)
   10 : LOW WIPEr BACKUP SW (0, 1)
 */
+
+void send2P5(){
+  Serial.write(buffer, 12);
+}

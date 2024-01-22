@@ -12,10 +12,10 @@
 #define PIN_TURN  A2
 #define PIN_PASSING A3
 
-byte buffer[12];    // data buffer
+byte buffer[11];    // data buffer
 
 void setup() {
-  // put your setup code here, to run once:
+  // put your setup code here, uto run once:
   Serial.begin(9600);
 
   pinMode(PIN_LIGHT_ON, INPUT_PULLUP);
@@ -26,52 +26,53 @@ void setup() {
 }
 
 void loop() {
+  readMFS();
+  send2P5();
   delay(100);
 }
 
 void readMFS(){
-  buffer[0] = '/';
-
   // light switch
-  buffer[1] = checkLightSwitch(analogRead(PIN_LIGHT));
+  buffer[0] = checkLightSwitch(analogRead(PIN_LIGHT));
 
   // passing/high switch
-  buffer[2]= checkPassingSwitch(analogRead(PIN_PASSING));
+  buffer[1]= checkPassingSwitch(analogRead(PIN_PASSING));
 
   // turn signal
-  buffer[3] = checkTurnSignal(analogRead(PIN_TURN));
+  buffer[2] = checkTurnSignal(analogRead(PIN_TURN));
 
   // front wiper switch
-  buffer[4] = checkFrontWiper(analogRead(PIN_WIPER_F));
+  buffer[3] = checkFrontWiper(analogRead(PIN_WIPER_F));
   
   // front wiper speed
-  buffer[5] = checkFrontWiperSpeed(analogRead(PIN_WIPER_SPEED));
+  buffer[4] = checkFrontWiperSpeed(analogRead(PIN_WIPER_SPEED));
   
   // rear wiper switch
-  buffer[6] = checkRearWiperSwitch(analogRead(PIN_WIPER_R));
+  buffer[5] = checkRearWiperSwitch(analogRead(PIN_WIPER_R));
   
   // washer front sw
-  buffer[7] = checkWasherFrontSW(digitalRead(PIN_WASH_F_SW));
+  buffer[6] = checkWasherFrontSW(digitalRead(PIN_WASH_F_SW));
 
   // washer rear sw
-  buffer[8] = checkWasherRearSW(digitalRead(PIN_WASH_R_SW));
+  buffer[7] = checkWasherRearSW(digitalRead(PIN_WASH_R_SW));
   
   // light on / wiper on
-  buffer[9] = checkLightLowBackupOn(digitalRead(PIN_LIGHT_ON));
-  buffer[10] = checkWiperLowBackupOn(digitalRead(PIN_WIPER_ON));
-  buffer[11] = '\n';
+  buffer[8] = checkLightLowBackupOn(digitalRead(PIN_LIGHT_ON));
+  buffer[9] = checkWiperLowBackupOn(digitalRead(PIN_WIPER_ON));
+//  buffer[10] = '\n';
 }
 
 uint8_t checkLightSwitch(uint16_t val){
   if(val < 300)         return 0;
-  else if (val < 500)   return 3;   // LOW
-  else if (val < 800)   return 2;   // FOG
+  else if (val < 700)   return 3;   // LOW
+  else if (val < 900)   return 2;   // FOG
   else                  return 1;   // AUTO
 }
 
-uint8_t checkPassingSwitch(uint8_t val){
-  if(val < 500)   return 0;
-  else if (val < 750)   return 1;   // high beam
+uint8_t checkPassingSwitch(uint16_t val){
+  // Serial.println("!");
+  if(val < 500)         return 0;
+  else if (val < 850)   return 1;   // high beam
   else                  return 2;   // passing
 }
 
@@ -128,20 +129,23 @@ uint8_t checkLightLowBackupOn(uint8_t val){
 }
 
 /*
-  11 byte
-  0 : START CHAR ('/');
-  1 : LIGHT (0-3)
-  2 : PASS/HIGH (0-2)
-  3 : TURN SIGNAL (0-2)
-  4 : FRONT WIPER ( 0-4)
-  5 : FRONT WIPER SPEED (1-5)
-  6 : REAR WIPER (0-2)
-  7 : FRONT WASHER SW (0, 1)
-  8 : REAR WASHER SW (0, 1)
-  9 : LOW LIGHT BACKUP SW (0, 1)
-  10 : LOW WIPEr BACKUP SW (0, 1)
+  10 byte
+  0 : LIGHT (0-3)
+  1 : PASS/HIGH (0-2)
+  2 : TURN SIGNAL (0-2)
+  3 : FRONT WIPER ( 0-4)
+  4 : FRONT WIPER SPEED (1-5)
+  5 : REAR WIPER (0-2)
+  6 : FRONT WASHER SW (0, 1)
+  7 : REAR WASHER SW (0, 1)
+  8 : LOW LIGHT BACKUP SW (0, 1)
+  9: LOW WIPEr BACKUP SW (0, 1)
 */
 
 void send2P5(){
-  Serial.write(buffer, 12);
+  for(int i=0; i<10; i++){
+    Serial.print(buffer[i]);  
+  }
+  // Serial.write(buffer, 11);
+  Serial.println();
 }
